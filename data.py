@@ -111,3 +111,30 @@ def data_spliter(data_path, output_path):
 #         output_path = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory/{}/{}/".format(i,j)
 #         data_spliter(data_path, output_path)
 #         print(output_path)
+
+#
+# for i in ['A']:
+#     data_path = "/gpfsnyu/home/yz6492/on-lstm/data/billboard/" + i + "/chord_list.txt"
+#     output_path = "/gpfsnyu/home/yz6492/on-lstm/data/billboard/" + i + "/list/"
+#     data_spliter(data_path, output_path)
+#     print(output_path)
+#
+# for i in ['A']:
+#     data_path = "/gpfsnyu/home/yz6492/on-lstm/data/billboard/{}/chord.txt".format(i)
+#     output_path = "/gpfsnyu/home/yz6492/on-lstm/data/billboard/{}/".format(i)
+#     data_spliter(data_path, output_path)
+#     print(output_path)
+
+# for i in ['4bar']:
+#     for j in ['minor','major']:
+#         data_path = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory_melody/{}/{}.txt".format(i,j)
+#         output_path = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory_melody/{}/{}/".format(i,j)
+#         data_spliter(data_path, output_path)
+#         print(output_path)
+#
+# for i in ['4bar']:
+#     for j in ['minor','major']:
+#         data_path = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory_melody/" + i + "/{}_list.txt".format(j)
+#         output_path = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory_melody/" + i + "/" + j + "/list/"
+#         data_spliter(data_path, output_path)
+#         print(output_path)

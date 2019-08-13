@@ -10,11 +10,14 @@ import torch.optim.lr_scheduler as lr_scheduler
 import data
 import model
 import pysnooper
+from torch.utils.tensorboard import SummaryWriter
 
 from utils import batchify, get_batch, repackage_hidden
 
 root = '/gpfsnyu/home/yz6492/on-lstm/'
-mode = '/hooktheory/A/major/'
+# mode = '/hooktheory/A/major/'
+mode = '/hooktheory_melody/4bar/major/'
+
 
 print(mode)
 sys.stdout.flush()
@@ -39,7 +42,7 @@ parser.add_argument('--epochs', type=int, default=100,
                     help='upper epoch limit')
 parser.add_argument('--batch_size', type=int, default=80, metavar='N',
                     help='batch size')
-parser.add_argument('--bptt', type=int, default=70,
+parser.add_argument('--bptt', type=int, default=64,
                     help='sequence length')
 parser.add_argument('--dropout', type=float, default=0.4,
                     help='dropout applied to layers (0 = no dropout)')
@@ -57,7 +60,7 @@ parser.add_argument('--nonmono', type=int, default=5,
                     help='random seed')
 parser.add_argument('--cuda', default=True,
                     help='use CUDA')
-parser.add_argument('--log-interval', type=int, default=20, metavar='N',
+parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='report interval')
 randomhash = ''.join(str(time.time()).split('.'))
 parser.add_argument('--save', type=str, default=root+ 'model' + mode + randomhash + '.pt',
@@ -72,7 +75,7 @@ parser.add_argument('--resume', type=str, default='',
                     help='path of model to resume')
 parser.add_argument('--optimizer', type=str, default='sgd',
                     help='optimizer to use (sgd, adam)')
-parser.add_argument('--when', nargs="+", type=int, default=[40, 80],
+parser.add_argument('--when', nargs="+", type=int, default=[-1],
                     help='When (which epochs) to divide the learning rate by 10 - accepts multiple')
 parser.add_argument('--finetuning', type=int, default=-1,
                     help='When (which epochs) to switch to finetuning')
@@ -177,6 +180,8 @@ sys.stdout.flush()
 ###############################################################################
 # Training code
 ###############################################################################
+
+writer = SummaryWriter()
 
 def evaluate(data_source, batch_size=10):
     # Turn on evaluation mode which disables dropout.
@@ -289,6 +294,9 @@ try:
                 epoch, (time.time() - epoch_start_time), val_loss2, math.exp(val_loss2), val_loss2 / math.log(2)))
             print('-' * 89)
 
+            writer.add_scalar(tag='valid loss', scalar_value=val_loss2, global_step=epoch)
+            writer.add_scalar(tag='valid ppl', scalar_value=math.exp(val_loss2), global_step=epoch)
+
             if val_loss2 < stored_loss:
                 model_save(args.save)
                 print('Saving Averaged!')
@@ -354,3 +362,5 @@ print('=' * 89)
 print('| End of training | test loss {:5.2f} | test ppl {:8.2f} | test bpc {:8.3f}'.format(
     test_loss, math.exp(test_loss), test_loss / math.log(2)))
 print('=' * 89)
+
+writer.close()

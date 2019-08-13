@@ -113,9 +113,11 @@ def generate(model, corpus, cuda, prt=False):
         dataset = corpus.test
 
     with open( root + 'data' + mode + '/list/{}.txt'.format('test' if not args.wsj10 else 'train'), 'r') as ff:
-        filelist = ff.readlines()
+        filelist = [item.strip() for item in ff.readlines()]
     corpus_sys = {}
     for sen in dataset:
+        if args.samples <= nsens:
+            break
         if args.wsj10 and len(sen) < 5:
             continue
         #x = numpy.array([word2idx[w] if w in word2idx else -1 for w in sen])
@@ -147,7 +149,7 @@ def generate(model, corpus, cuda, prt=False):
 
             # import partition
 
-            TreePainter(parse_tree, root + 'output'+ mode + '{}.png'.format(title), corpus.dictionary.idx2word, title=title)
+            tree = TreePainter(parse_tree, root + 'output'+ mode + '{}.png'.format(title), corpus.dictionary.idx2word, title=title)
             pred_tree_list.append(parse_tree)
         nsens += 1
 
@@ -155,8 +157,8 @@ if __name__ == '__main__':
     marks = [' ', '-', '=']
 
     root = '/gpfsnyu/home/yz6492/on-lstm/'
-    mode = '/hooktheory/C/major/'
-    checkpoint = root + '/model/' + mode + '15648569353998463.pt'
+    mode = '/hooktheory_melody/4bar/major/'
+    checkpoint = root + '/model/' + mode + '15651551806532447.pt'
 
     numpy.set_printoptions(precision=2, suppress=True, linewidth=5000)
 
@@ -173,8 +175,10 @@ if __name__ == '__main__':
                         help='use CUDA')
     parser.add_argument('--wsj10', default=False,
                         help='use WSJ10')
+    parser.add_argument('--samples', type=int, default = 200,
+                        help='generate samples number')
     args = parser.parse_args()
-    args.bptt = 70
+    args.bptt = 64
 
     # Set the random seed manually for reproducibility.
     torch.manual_seed(args.seed)

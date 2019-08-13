@@ -132,31 +132,31 @@ def generate(model, corpus, cuda, prt=False):
 
         sen_cut = sen[1:-1] # 去除EOS！
         # gates = distance.mean(axis=0)
-        for gates in [
-            # distance[0],
+        for layer, gates in enumerate([
+            distance.mean(axis=0),
+            distance[0],
             distance[1],
-            # distance[2],
-            # distance.mean(axis=0)
-        ]:
+            distance[2]
+        ]):
             depth = gates[1:-1]
             parse_tree = build_tree(depth, sen_cut)
 
             # import file name
             date = dt.datetime.today()
-            title = filelist[nsens].strip() + str(date.month) + '-' + str(date.day)
+            title = 'id{}-layer{}-day{}.{}'.format(filelist[nsens].strip(),layer,date.month, date.day)
 
             # import partition
 
             TreePainter(parse_tree, root + 'output'+ mode + '{}.png'.format(title), corpus.dictionary.idx2word, title=title)
             pred_tree_list.append(parse_tree)
-            nsens += 1
+        nsens += 1
 
 if __name__ == '__main__':
     marks = [' ', '-', '=']
 
     root = '/gpfsnyu/home/yz6492/on-lstm/'
     mode = '/billboard/A/'
-    checkpoint = root + '15634533062545605.pt'
+    checkpoint = root + '/model/' + mode + '15649880805282216.pt'
 
     numpy.set_printoptions(precision=2, suppress=True, linewidth=5000)
 
