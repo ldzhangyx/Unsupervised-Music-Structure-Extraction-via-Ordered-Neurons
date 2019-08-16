@@ -36,34 +36,42 @@ class TreePainter(object):
         self.paint_tree(output_file)
 
     def create_midi(self, input_list, output_file):
-        midi_file = pretty_midi.PrettyMIDI()
-        cello_program = pretty_midi.instrument_name_to_program('acousticgrandpiano')
-        cello = pretty_midi.Instrument(program=cello_program)
-        _mel_list = self.flat_list(self.origin_list) # 是一个tensor list
-        current_time = 0
-        timespan = 0
-        current_pitch = None
+        self.midi_file = pretty_midi.PrettyMIDI()
+        cello_program = pretty_midi.instrument_name_to_program('acoustic grand piano')
+        cello = pretty_midi.Instrument(program=0)
+
         _sustain = torch.tensor(self.id2word.index('0'), dtype=torch.float32)
         _rest = torch.tensor(self.id2word.index('-1'), dtype=torch.float32)
-        for element in _mel_list:
+
+        _mel_list = self.flat_list(self.origin_list) # 是一个tensor list
+        _mel_list.append(_rest)
+        current_time = 0
+        timespan = 0.25
+        current_pitch = None
+
+        for i, element in enumerate(_mel_list[:-1]):
             if element == _rest:
                 continue
-            elif element == _sustain:
+            if element == _sustain:
                 timespan += 0.25
-            else:
+            if not current_pitch:
+                current_pitch = element
+            if _mel_list[i+1] != _sustain: # 新音符
                 if timespan > 0:
                     cello.notes.append(
                         pretty_midi.Note(
                             velocity=100,
                             start=current_time,
                             end = current_time + timespan,
-                            pitch = int(current_pitch)
+                            pitch = int(self.id2word[int(current_pitch)])
                         )
                     )
-                current_pitch = element
-        midi_file.instruments.append(cello)
-        save_file = output_file[-4:] + '.mid'
-        midi_file.write(save_file)
+                current_pitch = None
+                current_time += timespan
+                timespan = 0.25
+        self.midi_file.instruments.append(cello)
+        save_file = output_file[:-4] + '.mid'
+        self.midi_file.write(save_file)
 
     def rewrite(self, node, flag, _rest, _sustain):
         if isinstance(node, list):
@@ -200,7 +208,7 @@ class TreePainter(object):
                                        for k in list(self.graph.nodes)
                                        if self.graph.nodes[k]['tag'] != ""
                                    },
-                                   font_size=13,
+                                   font_size=9,
                                    node_size=250,
                                    node_color='gold',
                                    edge_color='silver',
