@@ -1,6 +1,6 @@
 # Unsupervised Music Structure Extraction via Ordered Neurons
 
-Features:
+## Features:
 
 - A very first program on unsupervised music structure parsing
 - Support note-level parsing and chord level parsing
