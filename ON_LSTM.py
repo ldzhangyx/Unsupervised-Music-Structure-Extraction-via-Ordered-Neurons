@@ -37,7 +37,7 @@ class LinearDropConnect(nn.Linear):
                 dtype=torch.uint8
             )
             mask.bernoulli_(self.dropout)
-            self._weight = self.weight.masked_fill(mask, 0.)
+            self.sample_weight = self.weight.masked_fill(mask, 0.)
 
     def forward(self, input, sample_mask=False):
         if self.training:

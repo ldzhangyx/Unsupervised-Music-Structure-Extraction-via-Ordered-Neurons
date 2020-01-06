@@ -79,7 +79,7 @@ class Corpus(object):
             token = 0
             for line in f:
                 words = ['<eos>'] + line.split() + ['<eos>']
-                ids.append(torch.Tensor([self.dictionary.word2idx[word] for word in words]))
+                ids.append(torch.Tensor([self.dictionary.word2idx[word] for word in words])) # 分句
                 token += 1
 
         return ids
@@ -138,3 +138,8 @@ def data_spliter(data_path, output_path):
 #         output_path = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory_melody/" + i + "/" + j + "/list/"
 #         data_spliter(data_path, output_path)
 #         print(output_path)
+
+# data_path = "/gpfsnyu/home/yz6492/on-lstm/data/gttm/gttm_list.txt"
+# output_path = "/gpfsnyu/home/yz6492/on-lstm/data/gttm/gttm/list/"
+# data_spliter(data_path, output_path)
+# print(output_path)

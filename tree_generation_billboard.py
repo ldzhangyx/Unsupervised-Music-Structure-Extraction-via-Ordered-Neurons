@@ -195,6 +195,7 @@ if __name__ == '__main__':
     corpus = torch.load(fn)
     dictionary = corpus.dictionary
 
+
     corpus = data.Corpus(args.data, extend = True)
     corpus.dictionary = dictionary
 

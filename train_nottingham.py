@@ -58,7 +58,7 @@ parser.add_argument('--seed', type=int, default=1111,
                     help='random seed')
 parser.add_argument('--nonmono', type=int, default=5,
                     help='random seed')
-parser.add_argument('--cuda', default=True,
+parser.add_argument('--cuda', default=False,
                     help='use CUDA')
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='report interval')
@@ -141,8 +141,7 @@ from splitcross import SplitCrossEntropyLoss
 
 criterion = None
 
-ntokens = len(corpus.dictionary)
-model = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.chunk_size, args.nlayers,
+model = model.RNNModel(args.model, args.emsize, args.emsize, args.nhid, args.chunk_size, args.nlayers,
                        args.dropout, args.dropouth, args.dropouti, args.dropoute, args.wdrop, args.tied)
 ###
 if args.resume:
@@ -188,7 +187,6 @@ def evaluate(data_source, batch_size=10):
     model.eval()
     if args.model == 'QRNN': model.reset()
     total_loss = 0
-    ntokens = len(corpus.dictionary)
     hidden = model.init_hidden(batch_size)
     for i in range(0, data_source.size(0) - 1, args.bptt):
         data, targets = get_batch(data_source, i, args, evaluation=True)
@@ -203,7 +201,6 @@ def train():
     if args.model == 'QRNN': model.reset()
     total_loss = 0
     start_time = time.time()
-    ntokens = len(corpus.dictionary)
     hidden = model.init_hidden(args.batch_size)
     batch, i = 0, 0
     while i < train_data.size(0) - 1 - 1:

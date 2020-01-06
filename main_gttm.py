@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim.lr_scheduler as lr_scheduler
+import pickle
 
 import data
 import model
@@ -16,8 +17,7 @@ from utils import batchify, get_batch, repackage_hidden
 
 root = '/gpfsnyu/home/yz6492/on-lstm/'
 # mode = '/hooktheory/A/major/'
-mode = '/hooktheory_melody/4bar/major/'
-
+mode = '/gttm/'
 
 print(mode)
 sys.stdout.flush()
@@ -28,13 +28,13 @@ parser.add_argument('--model', type=str, default='LSTM',
                     help='type of recurrent net (LSTM, QRNN, GRU)')
 parser.add_argument('--emsize', type=int, default=100,
                     help='size of word embeddings')
-parser.add_argument('--nhid', type=int, default=2300,
+parser.add_argument('--nhid', type=int, default=1150,
                     help='number of hidden units per layer')
 parser.add_argument('--chunk_size', type=int, default=10,
                     help='number of units per chunk')
-parser.add_argument('--nlayers', type=int, default=3, # 3
+parser.add_argument('--nlayers', type=int, default=3,
                     help='number of layers')
-parser.add_argument('--lr', type=float, default=30, # 30
+parser.add_argument('--lr', type=float, default=10,
                     help='initial learning rate')
 parser.add_argument('--clip', type=float, default=0.25,
                     help='gradient clipping')
@@ -63,7 +63,7 @@ parser.add_argument('--cuda', default=True,
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='report interval')
 randomhash = ''.join(str(time.time()).split('.'))
-parser.add_argument('--save', type=str, default="/gpfsnyu/scratch/yz6492/on-lstm/model/hooktheory_melody/" + randomhash + '.pt',
+parser.add_argument('--save', type=str, default='/gpfsnyu/scratch/yz6492/on-lstm/' + 'model' + mode + randomhash + '_finetuned_high' + '.pt',
                     help='path to save the final model')
 parser.add_argument('--alpha', type=float, default=2,
                     help='alpha L2 regularization on RNN activation (alpha = 0 means no regularization)')
@@ -71,7 +71,7 @@ parser.add_argument('--beta', type=float, default=1,
                     help='beta slowness regularization applied on RNN activiation (beta = 0 means no regularization)')
 parser.add_argument('--wdecay', type=float, default=1e-6,
                     help='weight decay applied to all weights')
-parser.add_argument('--resume', type=str, default='',
+parser.add_argument('--resume', type=str, default=root + '/model/gttm/15651551806532447.pt',
                     help='path of model to resume')
 parser.add_argument('--optimizer', type=str, default='sgd',
                     help='optimizer to use (sgd, adam)')
@@ -116,16 +116,37 @@ def model_load(fn):
 import os
 import hashlib
 
-fn = args.data + 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
-if args.philly:
-    fn = os.path.join(os.environ['PT_OUTPUT_DIR'], fn)
-if os.path.exists(fn):
-    print('Loading cached dataset...')
-    corpus = torch.load(fn)
-else:
-    print('Producing dataset...')
-    corpus = data.Corpus(args.data)
-    torch.save(corpus, fn)
+# fn = args.data + 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
+# if args.philly:
+#     fn = os.path.join(os.environ['PT_OUTPUT_DIR'], fn)
+# if os.path.exists(fn):
+#     print('Loading cached dataset...')
+#     corpus = torch.load(fn)
+# else:
+#     print('Producing dataset...')
+#     corpus = data.Corpus(args.data)
+#     torch.save(corpus, fn)
+
+fn = "/gpfsnyu/home/yz6492/on-lstm/data/hooktheory_melody/4bar/major/corpus.65d04c302837dca35f448ea380ab3963.data"
+# fn = args.data + 'corpus.{}.data'.format(hashlib.md5(args.data.encode()).hexdigest())
+print('Loading cached dataset...')
+corpus = torch.load(fn)
+dictionary = corpus.dictionary
+
+with open("/gpfsnyu/home/yz6492/on-lstm/data/gttm/gttm_dict.pkl", 'rb') as f:
+    dataset_dict = pickle.load(f)
+
+tokens = sum([len(dataset_dict[i])+ 1 for i in dataset_dict]) # 数据总长度
+ids = torch.LongTensor(tokens)
+cnt = 0
+for line in dataset_dict:
+    for word in dataset_dict[line]:
+        ids[cnt] = dictionary.word2idx[str(int(word))]
+        cnt += 1
+    ids[cnt] = dictionary.word2idx['<eos>']
+    cnt += 1
+
+corpus.train  = corpus.valid = corpus.test = ids
 
 eval_batch_size = 10
 test_batch_size = 1
@@ -182,6 +203,7 @@ sys.stdout.flush()
 ###############################################################################
 
 writer = SummaryWriter()
+
 
 def evaluate(data_source, batch_size=10):
     # Turn on evaluation mode which disables dropout.
@@ -261,7 +283,6 @@ def train():
         ###
         batch += 1
         i += seq_len
-
 
 
 # Loop over epochs.
@@ -347,7 +368,7 @@ try:
             best_val_loss.append(val_loss)
 
         print("PROGRESS: {}%".format((epoch / args.epochs) * 100))
-        sys.stdout.flush() # 解决输出不及时的问题
+        sys.stdout.flush()  # 解决输出不及时的问题
 
 except KeyboardInterrupt:
     print('-' * 89)

@@ -18,7 +18,7 @@ class RNNModel(nn.Module):
         self.encoder = nn.Embedding(ntoken, ninp)
         assert rnn_type in ['LSTM'], 'RNN type is not supported'
         self.rnn = ONLSTMStack(
-            [ninp] + [nhid] * (nlayers - 1) + [ninp],
+            [ninp] + [nhid] * (nlayers - 1) + [ninp], # 所有的RNNCell，embedding层+二层RNN+embedding层
             chunk_size=chunk_size,
             dropconnect=wdrop,
             dropout=dropouth
