@@ -6,6 +6,7 @@
 - Support note-level parsing and chord level parsing
 - Support Nottingham Dataset, Billboard Dataset, HookTheory Melody/Chord Dataset
 - Provide a MIDI/numpy transfer toolkit
+- Provide a **visualization toolkit** for parse trees.
 
 # Quick Start
 
